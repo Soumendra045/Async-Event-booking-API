@@ -1,0 +1,52 @@
+services:
+  db:
+    image: mysql:8.4.10
+    container_name: event-db
+    restart: always
+    env_file:
+      - ../env/.env
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: 
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: event-booking-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../env/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ..:/app
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: event-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  redis-data:
