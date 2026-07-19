@@ -10,6 +10,7 @@ from app.db.dependancy import get_db
 from app.schemas import category_schemas
 
 from app.repositories import category_repository
+from app.services import category_services
 
 router = APIRouter(
     prefix='/categories',
@@ -30,7 +31,7 @@ async def create_category(db: db_dependency, user:user_dependency,category:categ
 
 @router.get('/get_all_category', response_model=list[category_schemas.CategoryResponse])
 async def get_all_category(db: db_dependency, user: user_dependency):
-    return await category_repository.get_category(db)
+    return await category_services.get_all_categories(db)
 
 @router.get('/get_category_by_id', response_model=category_schemas.CategoryResponse)
 async def get_category_by_id(db: db_dependency, user: user_dependency, category_id: UUID):

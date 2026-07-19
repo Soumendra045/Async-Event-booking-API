@@ -1,3 +1,4 @@
+from app.core.redis import redis_client
 from datetime import datetime
 from fastapi import HTTPException, status
 import uuid
@@ -14,6 +15,9 @@ async def create_category(db: AsyncSession, category: category_schemas.CategoryC
     db.add(category_details)
     await db.commit()
     await db.refresh(category_details)
+
+    await redis_client.delete("categories:all")
+
     return category_details
 
 async def get_category(db: AsyncSession):
@@ -31,14 +35,22 @@ async def update_category(db: AsyncSession, category_id: uuid.UUID, category:cat
     data = category.model_dump(exclude_unset=True)
     for key, value in data.items():
         setattr(category_details, key, value)
+    
     await db.commit()
     await db.refresh(category_details)
+
+    await redis_client.delete("categories:all")
+    
     return category_details
 
 async def delete_category(db: AsyncSession, category_id: uuid.UUID):
     category_details = await get_category_by_id(db, category_id)
     if not category_details:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Category not found")
+
     await db.delete(category_details)
     await db.commit()
+
+    await redis_client.delete("categories:all")
+
     return category_details
