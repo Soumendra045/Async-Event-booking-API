@@ -8,6 +8,7 @@ from sqlalchemy import select
 from app.schemas import venue_schemas
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.redis import redis_client
 
 
 async def create_venue(db: AsyncSession, venue_details: venue_schemas.VenueCreate):
@@ -16,6 +17,8 @@ async def create_venue(db: AsyncSession, venue_details: venue_schemas.VenueCreat
     db.add(venue)
     await db.commit()
     await db.refresh(venue)
+
+    await redis_client.delete("venues:all")
     return venue
 
 async def get_all_venues(db: AsyncSession):
@@ -44,6 +47,8 @@ async def update_venue(db: AsyncSession, venue_id: uuid.UUID, venue_details: ven
 
     await db.commit()
     await db.refresh(venue)
+
+    await redis_client.delete("venues:all")
     return venue
 
 async def delete_venue(db: AsyncSession, venue_id: uuid.UUID):
@@ -51,6 +56,8 @@ async def delete_venue(db: AsyncSession, venue_id: uuid.UUID):
 
     await db.delete(venue)
     await db.commit()
+
+    await redis_client.delete("venues:all")
     return {"message": "Venue deleted successfully"}
 
 async def search_by_name(db: AsyncSession, name: str):

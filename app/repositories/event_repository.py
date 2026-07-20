@@ -1,7 +1,4 @@
-from app.db.dependancy import get_db
-from typing import Annotated
-# from datetime import datetime
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status
 import uuid
 from app.models.model import Event, Category, Venue
 from sqlalchemy import select
@@ -10,6 +7,8 @@ from app.schemas import event_schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sqlalchemy.orm import selectinload
+
+from app.core.redis import redis_client
 
 async def create_event(db: AsyncSession, event_details: event_schemas.EventCreate,organizer_id: uuid.UUID):
     category = await db.get(Category, event_details.category_id)
@@ -30,6 +29,9 @@ async def create_event(db: AsyncSession, event_details: event_schemas.EventCreat
     db.add(result)
     await db.commit()
     await db.refresh(result)
+
+    await redis_client.delete("event:all")
+
     query = (
         select(Event)
         .options(
@@ -85,6 +87,9 @@ async def update_event(db: AsyncSession, event_id: uuid.UUID, event_details: eve
 
     await db.commit()
     await db.refresh(event)
+
+    await redis_client.delete("event:all")
+
     return event
 
 async def delete_event(db: AsyncSession, event_id: uuid.UUID):
@@ -97,4 +102,7 @@ async def delete_event(db: AsyncSession, event_id: uuid.UUID):
         )
     await db.delete(event)
     await db.commit()
+
+    await redis_client.delete("event:all")
+
     return {"message": "Event deleted successfully"}

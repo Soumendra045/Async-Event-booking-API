@@ -1,5 +1,4 @@
 from app.core.redis import redis_client
-from datetime import datetime
 from fastapi import HTTPException, status
 import uuid
 from app.models.model import Category

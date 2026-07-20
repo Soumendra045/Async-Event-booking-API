@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.authentication.auth import get_current_user
 from app.repositories import venue_repository
 
+from app.services import venue_services
+
 import uuid
 
 router = APIRouter(
@@ -37,7 +39,7 @@ async def get_all_user(
     user: user_dependency
 ):
 
-    venues = await venue_repository.get_all_venues(db)
+    venues = await venue_services.get_all_venues(db)
     return venues
 
 @router.get('/get_venue_by_id/{venue_id}', response_model=venue_schemas.VenueResponse)

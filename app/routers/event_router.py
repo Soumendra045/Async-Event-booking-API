@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.authentication.auth import get_current_user
 import uuid
 
+from app.services import event_services
+
 
 router = APIRouter(
     prefix='/events',
@@ -27,7 +29,7 @@ async def create_event(db: db_dependency, event_details: event_schemas.EventCrea
 
 @router.get('/get_all_events', response_model=list[event_schemas.EventResponse])
 async def get_all_events(db: db_dependency,user:user_dependency):
-    return await event_repository.get_all_events(db)
+    return await event_services.get_all_events_service(db)
 
 @router.get('/get_event_by_id', response_model=event_schemas.EventResponse)
 async def get_event_by_id(db: db_dependency, event_id: uuid.UUID,user: user_dependency):

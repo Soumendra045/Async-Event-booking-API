@@ -24,7 +24,7 @@ async def get_all_categories(db: AsyncSession):
     await redis_client.set(
         'categories:all',
         json.dumps(json_data),
-        ex=300 # 5 minutes
+        ex=1800 # 5 minutes
     )
 
     return json_data
